@@ -1,7 +1,13 @@
 import express from 'express'
 import {execSync} from 'child_process'
+import path from 'path'
+import {readFileSync} from 'fs'
 
 const app: express.Express = express()
+
+type Question = {
+  content: string
+}
 
 type Result = {
   result: 'pass'
@@ -27,7 +33,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // GetとPostのルーティング
 const router: express.Router = express.Router()
-router.post('/api/submit', (req: express.Request, res: express.Response<Result>) => {
+router.post('/api/java1/submit', (req: express.Request, res: express.Response<Result>) => {
   const blank1 = String(req.body.blank1);
   const command = `
     docker-compose run \
@@ -54,7 +60,18 @@ router.post('/api/submit', (req: express.Request, res: express.Response<Result>)
     })
   }
 })
+router.get('/api/java1', (req: express.Request, res: express.Response<Question>) => {
+  const file = readFileSync(path.join(__dirname,'Main.java.tmpl'));
+  res.send({
+    content: file.toString()
+  })
+})
 app.use(router)
 
-// 3000番ポートでAPIサーバ起動
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use((_req, res) => {
+  res.sendStatus(404);
+});
+
 app.listen(3000,()=>{ console.log('Example app listening on port 3000!') })

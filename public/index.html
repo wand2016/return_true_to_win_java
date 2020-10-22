@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>return true to win</title>
+</head>
+
+<body>
+  <h1>return true to win</h1>
+  <pre><code id="question">...</code></pre>
+
+  <textarea id="blank1" placeholder="blank1"></textarea>
+  <button id="submit" type="button">submit</button>
+  <br>
+  <pre><output id="output"></output></pre>
+
+</body>
+<script>
+ const xhr = new XMLHttpRequest();
+ xhr.open('GET', '/api/java1');
+ xhr.responseType = 'json';
+ xhr.onload = function () {
+     document.querySelector('#question').innerText = xhr.response.content;
+ }
+ xhr.send();
+
+ function submit(e) {
+     e.preventDefault();
+     const blank1 = document.querySelector('#blank1').value;
+     xhr.open('POST', '/api/java1/submit');
+     xhr.setRequestHeader("Content-Type", "application/json");
+     xhr.responseType = 'json';
+     xhr.onload = function () {
+         document.querySelector('#output').innerText = '実行中...'
+         renderResult(xhr.response)
+     }
+     xhr.send(JSON.stringify({blank1}));
+     document.querySelector('#output').innerText = '実行中...'
+ }
+ document.querySelector('#submit').addEventListener('click', submit);
+
+ function renderResult(result) {
+     const output = document.querySelector('#output');
+     if (result.result === 'pass') {
+         output.innerText = [
+             'exitCode: ' + result.exitCode,
+             '----------------------------------------',
+             result.stdout,
+         ].join('\n');
+     }
+     else if (result.result === 'fail') {
+         output.innerText = [
+             'exitCode: ' + result.exitCode,
+             '----------------------------------------',
+             result.stdout,
+             result.stderr,
+         ].join('\n');
+     }
+ }
+</script>
+</html>
